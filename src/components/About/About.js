@@ -1,5 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
+import { motion } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 
 const AboutContainer = styled.section`
   padding: 80px 0;
@@ -55,46 +57,98 @@ const ImageContainer = styled.div`
   }
 `;
 
-const FounderSection = styled.div`
-  background: #f9f9f9;
-  padding: 60px 0;
-  margin: 40px 0;
-  border-radius: 20px;
+const AboutSection = styled.section`
+  padding: 6rem 2rem;
+  background: #f8f3e9; // Warm, natural background color
+  overflow: hidden;
+`;
+
+const FounderSection = styled(motion.div)`
+  position: relative;
+  padding: 4rem;
+  background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+  border-radius: 30px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  margin: 4rem auto;
+  max-width: 1000px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(45deg, #FF6B6B, #FFE66D);
+    border-radius: 50%;
+    opacity: 0.1;
+    z-index: -1;
+  }
+
+  @media (max-width: 768px) {
+    padding: 2rem;
+  }
 `;
 
 const FounderContent = styled.div`
   display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 40px;
-  align-items: start;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 0 20px;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 4rem;
+  align-items: center;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    text-align: center;
   }
 `;
 
-const FounderImage = styled.div`
-  img {
-    width: 100%;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+const FounderImageWrapper = styled(motion.div)`
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: 10px;
+    bottom: 10px;
+    border: 2px solid #FF6B6B;
+    border-radius: 20px;
+    z-index: -1;
   }
 `;
 
-const FounderText = styled.div`
+const FounderImage = styled(motion.img)`
+  width: 100%;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+`;
+
+const FounderText = styled(motion.div)`
   h3 {
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
-    color: #333;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 900;
+    background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 2rem;
+    line-height: 1.2;
   }
 
   p {
-    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
     line-height: 1.8;
-    color: #666;
+    margin-bottom: 1.5rem;
+    color: #555;
+    opacity: 0.9;
+  }
+
+  .signature {
+    font-family: 'Titillium Web', cursive;
+    font-size: 1.5rem;
+    color: #FF6B6B;
+    margin-top: 2rem;
   }
 `;
 
@@ -129,6 +183,42 @@ const ValueCard = styled.div`
 `;
 
 const About = () => {
+  const [ref, inView] = useInView({
+    threshold: 0.2,
+    triggerOnce: true
+  });
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.8,
+        ease: "easeOut",
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const imageVariants = {
+    hidden: { opacity: 0, x: -50 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.8, ease: "easeOut" }
+    }
+  };
+
+  const textVariants = {
+    hidden: { opacity: 0, x: 50 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.8, ease: "easeOut" }
+    }
+  };
+
   return (
     <AboutContainer id="about">
       <Container>
@@ -155,27 +245,44 @@ const About = () => {
           </StoryText>
         </StorySection>
 
-        <FounderSection>
+        <FounderSection
+          ref={ref}
+          as={motion.div}
+          initial="hidden"
+          animate={inView ? "visible" : "hidden"}
+          variants={containerVariants}
+        >
           <FounderContent>
-            <FounderImage>
-              <img src="/images/founder.jpg" alt="Srikar YS - Founder of SIRIK" />
-            </FounderImage>
-            <FounderText>
-              <h3>Meet the Mind Behind the Madness</h3>
-              <p>
-                Hey! I'm Srikar YS — a former engineer, full-time flavour rebel, and unapologetic fizz lover.
-              </p>
-              <p>
-                I grew up sipping homemade Nannari during sweaty cricket summers and chaotic Bengaluru days. 
-                It was simple, refreshing, and honest. Fast forward my fridge was stacked with sodas pretending 
-                to be cool — all loaded with sugar, fake flavours, and artificial crap.
-              </p>
-              <p>
-                I had one simple thought — why does enjoying a fizzy drink have to come at the cost of my health?
-              </p>
-              <p>
-                SIRIK isn't here to ride a health trend. We're here to start a clean soda revolution.
-              </p>
+            <FounderImageWrapper variants={imageVariants}>
+              <FounderImage
+                src="/images/founder.jpg"
+                alt="Srikar YS - Founder of SIRIK"
+                variants={imageVariants}
+              />
+            </FounderImageWrapper>
+            
+            <FounderText variants={textVariants}>
+              <motion.h3
+                variants={textVariants}
+              >
+                Meet the Mind Behind the Madness
+              </motion.h3>
+              <motion.div variants={textVariants}>
+                <p>
+                  Hey! I'm Srikar YS — a former engineer, full-time flavour rebel, and unapologetic 
+                  fizz lover.
+                </p>
+                <p>
+                  I grew up sipping homemade Nannari during sweaty cricket summers and chaotic 
+                  Bengaluru days. It was simple, refreshing, and honest. Fast forward my fridge was 
+                  stacked with sodas pretending to be cool — all loaded with sugar, fake flavours, 
+                  and artificial crap.
+                </p>
+                <p>
+                  SIRIK isn't here to ride a health trend. We're here to start a clean soda revolution.
+                </p>
+                <div className="signature">- Srikar YS</div>
+              </motion.div>
             </FounderText>
           </FounderContent>
         </FounderSection>
